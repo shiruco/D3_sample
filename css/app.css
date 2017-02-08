@@ -1,0 +1,43 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #F4F8FB;
+}
+
+a {
+  font-size: 14px;
+  color: #3874e3;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#graph {
+  position: relative;
+  width:100%; 
+  height: 500px;
+}
+#graph svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#graph svg circle {
+  margin: 10px 0 0 0;
+  font-size: 11px;
+}
+
+#graph .axis path,
+#graph .axis line {
+  fill: none;
+  stroke: #666;
+  shape-rendering: crispEdges;
+}
+#graph .axis text {
+  font-size: 11px;
+}
+
+#graph .grid {
+  fill: none;
+  stroke: #666;
+  shape-rendering: crispEdges;
+  opacity: 0.2;
+}
