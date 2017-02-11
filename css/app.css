@@ -12,8 +12,6 @@ a {
 
 #graph {
   position: relative;
-  width:700px; 
-  height: 500px;
 }
 #graph svg {
   position: absolute;
@@ -28,7 +26,7 @@ a {
 #graph .axis path,
 #graph .axis line {
   fill: none;
-  stroke: #666;
+  stroke: #CCC;
   shape-rendering: crispEdges;
 }
 #graph .axis text {
@@ -37,7 +35,6 @@ a {
 
 #graph .grid {
   fill: none;
-  stroke: #666;
+  stroke: #CCC;
   shape-rendering: crispEdges;
-  opacity: 0.2;
 }
