@@ -36,16 +36,27 @@
 
   }
 
-  var width = 750;
+  var width = 700;
   var height = 500;
   var aspect = width / height;
 
-  var padding = 30; // グラフの余白
-  var xAxisPadding = 50; // x軸表示余白
-  var yAxisPadding = 50; // y軸表示余白
+  //x軸の左右余白
+  var xAxisPadding = 30;
 
-  var displayNum = data.length - 1; // 表示日数
-  var dayWidth = (width - xAxisPadding - padding * 2) / displayNum; // 1日分の横幅
+  //y軸の上下余白
+  var yAxisPadding = 0;
+
+  // グラフ左余白
+  var graphLeftPadding = 60;
+
+  // グラフ上余白
+  var graphTopPadding = 20;
+
+  //グラフ下余白
+  var graphBottomPadding = 50;
+
+  //月単位の間隔
+  monthWidth = 50;
 
   var max = 2000000;
 
@@ -74,9 +85,9 @@
       graph.attr("height", targetWidth / aspect);
     });
 
-  //================================================
-  //    棒グラフ
-  //================================================
+  /* -----------------------------------
+    診察日数棒グラフ
+  ----------------------------------- */
 
   var c = [ "#BDE4F3", "#E7E2C1", "#E2CCD8" ]; // ColorBrewer Set 1
 
@@ -89,7 +100,7 @@
   // Groups scale, x axis
   var x0 = d3.scale.ordinal()
       .domain(d3.range(numberGroups))
-      .rangeBands([0, width-10], 0.7);
+      .rangeBands([graphLeftPadding, monthWidth * 11 + graphLeftPadding],0.8);
 
   // Series scale, x axis
   // It might help to think of the series scale as a child of the groups scale
@@ -99,8 +110,8 @@
 
   // Values scale, y axis
   var y = d3.scale.linear()
-      .domain([0, 2]) // Because Math.random returns numbers between 0 and 1
-      .range([0, height]);
+      .domain([0, 1]) // Because Math.random returns numbers between 0 and 1
+      .range([0, height - graphBottomPadding - graphTopPadding - yAxisPadding]);
 
 
   // Series selection
@@ -112,7 +123,7 @@
     .enter().append("g")
       .attr("class", "series") // Not strictly necessary, but helpful when inspecting the DOM
       .attr("fill", function (d, i) { return c[i]; })
-      .attr("transform", function (d, i) { return "translate(" + (x1(i) + padding) + ")"; });
+      .attr("transform", function (d, i) { return "translate(" + (x1(i)) + ")"; });
 
   // Groups selection
   var groups = series.selectAll("rect")
@@ -122,24 +133,24 @@
         .attr("y", function (d) { return height - y(d); })
         .attr("width", x1.rangeBand())
         .attr("height", y)
-        .attr("transform", function (d, i) { return "translate(" + x0(i) + ", -50)"; });
+        .attr("transform", function (d, i) { return "translate(" + x0(i) + ", " + -graphBottomPadding + ")"; });
 
-  //================================================
-  //    折れ線グラフ
-  //================================================
+  /* -----------------------------------
+    月次売上折れ線グラフ
+  ----------------------------------- */
 
   // 軸
   var xScale = d3.time.scale()
     .domain([1, 12])
-    .range([padding, width - xAxisPadding - padding]);
+    .range([xAxisPadding, monthWidth * 11 + xAxisPadding]);
 
   var yScale = d3.scale.linear()
     .domain([max, 0])
-    .range([padding, height - yAxisPadding - padding]);
+    .range([yAxisPadding + graphTopPadding, height - graphBottomPadding - yAxisPadding]);
 
   var yScale2 = d3.scale.linear()
     .domain([rightMax, 0])
-    .range([padding, height - yAxisPadding - padding]);
+    .range([yAxisPadding + graphTopPadding, height - graphBottomPadding - yAxisPadding]);
 
   var xAxis = d3.svg.axis()
     .scale(xScale)
@@ -172,55 +183,58 @@
     .innerTickSize(-width)
     .tickFormat("");
 
+  // 月(X軸)を描画
   graph.append("g")
     .attr("class", "axis")
-    .attr("transform", "translate(" + xAxisPadding + ", " + (height - yAxisPadding) + ")")
+    .attr("transform", "translate(" + graphLeftPadding + ", " + (height - graphBottomPadding) + ")")
     .call(xAxis)
     .selectAll("text")
     .attr("x", 0)
     .attr("y", 15);
 
+　// 売上(Y軸)を描画
   graph.append("g")
     .attr("class", "axis")
-    .attr("transform", "translate(" + xAxisPadding + ", 0)")
+    .attr("transform", "translate(" + graphLeftPadding + ", 0)")
     .call(yAxis);
 
+  // 診察日数(Y軸)を描画
   graph.append("g")
     .attr("class", "axis")
-    .attr("transform", "translate(" + (width) + ", 0)")
+    .attr("transform", "translate(" + (monthWidth * 11 + graphLeftPadding + xAxisPadding + 30) + ", 0)")
     .call(yAxis2);
 
   // Y軸のグリッドを描画
   graph.append("g")
     .attr("class", "grid")
-    .attr("transform", "translate(" + xAxisPadding + "," + (height - yAxisPadding) + ")")
+    .attr("transform", "translate(" + graphLeftPadding + "," + (height - graphBottomPadding) + ")")
     .call(yGridAxis);
 
   // X軸のグリッドを描画
   graph.append("g")
     .attr("class", "grid")
-    .attr("transform", "translate(" + xAxisPadding + ", 0)")
+    .attr("transform", "translate(" + graphLeftPadding + ", 0)")
     .call(xGridAxis);
 
   // 折れ線グラフ
   var line = d3.svg.line()
     .x(function(d, i){
-      return (i * dayWidth) + xAxisPadding + padding;
+      return (i * monthWidth) + graphLeftPadding + xAxisPadding;
     })
     .y(function(d){
-      return height - padding - yAxisPadding - ((height - yAxisPadding - padding * 2) / max * d.value );
+      return height - yAxisPadding - graphBottomPadding - ((height - graphBottomPadding - graphTopPadding - yAxisPadding * 2) / max * d.value );
     });
 
   // 塗り潰し領域を生成
   var area = d3.svg.area()
       .x(function(d,i) { 
-        return (i * dayWidth) + xAxisPadding + padding;
+        return (i * monthWidth) + graphLeftPadding + xAxisPadding;
       })
       .y0(function(d,i) { 
-        return height - yAxisPadding;
+        return height - graphBottomPadding;
       })
       .y1(function(d,i) { 
-        return height - padding - yAxisPadding - ((height - yAxisPadding - padding * 2) / max * d.value );
+        return height - yAxisPadding - graphBottomPadding - ((height - graphBottomPadding - graphTopPadding - yAxisPadding * 2) / max * d.value );
       });
 
   graph.append("path")
@@ -245,10 +259,10 @@
       .append("circle")
     .attr("class", "high_circle")
       .attr("cx", function(d,i){
-          return (i * dayWidth) + xAxisPadding + padding;
+          return (i * monthWidth) + graphLeftPadding + xAxisPadding;
       })
       .attr("cy", function(d){
-          return height - padding - yAxisPadding - ((height - yAxisPadding - padding * 2) / max * d.value );
+          return height - yAxisPadding - graphBottomPadding - ((height - graphBottomPadding - graphTopPadding - yAxisPadding * 2) / max * d.value );
       })
       .attr("r", 0)
       .attr("fill", "#FA4884")
@@ -268,9 +282,9 @@
     .attr("font-size", "14px")
     .attr("fill", "#FA4884")
     .attr("x", function(d, i){
-      return (i * dayWidth) + xAxisPadding + padding - 25;
+      return (i * monthWidth) + graphLeftPadding + xAxisPadding - 25;
     })
     .attr("y", function(d){
-      return height - padding - yAxisPadding - ((height - yAxisPadding - padding * 2) / max * d.value ) - 12;
+      return height - yAxisPadding - graphBottomPadding - ((height - graphBottomPadding - graphTopPadding - yAxisPadding * 2) / max * d.value ) - 12;
     });
 })();
