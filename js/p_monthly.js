@@ -1,40 +1,86 @@
 (function() {
 
+  'use strict';
+
   // 表示するデータ
-  var salesData = [
-    {date: "2014-10", value:1600000},
-    {date: "2014-11", value:1300000},
-    {date: "2014-12", value:1000000},
-    {date: "2015-01", value:1100000},
-    {date: "2015-02", value:1290000},
-    {date: "2015-03", value:1100000},
-    {date: "2015-04", value:1450000},
-    {date: "2015-05", value:1300000},
-    {date: "2015-06", value:1350000},
-    {date: "2015-07", value:1300000},
-    {date: "2015-08", value:1120000},
-    {date: "2015-09", value:1500000}
-  ];
-
-  var targetSalesData = [
-    {date: "2015-01", value:1500000},
-    {date: "2015-02", value:1600000},
-    {date: "2015-03", value:1700000},
-    {date: "2015-04", value:1700000},
-    {date: "2015-05", value:1500000},
-    {date: "2015-06", value:1700000},
-    {date: "2015-07", value:1570000},
-    {date: "2015-08", value:1600000},
-    {date: "2015-09", value:1700000},
-    {date: "2015-10", value:1600000},
-    {date: "2015-11", value:1400000},
-    {date: "2015-12", value:1700000}
-  ];
-
-  var businessDays = {
-    
-
+  var data = {
+    // 過去3年分の月次データ(昇順)
+    monthlyData: [
+      {
+        sales: [
+          {date: "2016-01", value:1300000, day: 10},
+          {date: "2016-02", value:1400000, day: 22},
+          {date: "2016-03", value:1100000, day: 21},
+          {date: "2016-04", value:1250000, day: 18},
+          {date: "2016-05", value:1400000, day: 30},
+          {date: "2016-06", value:1550000, day: 26},
+          {date: "2016-07", value:1500000, day: 24},
+          {date: "2016-08", value:1620000, day: 28},
+          {date: "2016-09", value:1700000, day: 25},
+          {date: "2016-10", value:1500000, day: 27},
+          {date: "2016-11", value:1390000, day: 27},
+          {date: "2016-12", value:1200000, day: 24}
+        ]
+      },
+      {
+        sales: [
+          {date: "2015-01", value:1600000, day: 21},
+          {date: "2015-02", value:1300000, day: 30},
+          {date: "2015-03", value:1000000, day: 24},
+          {date: "2015-04", value:1450000, day: 27},
+          {date: "2015-05", value:1300000, day: 24},
+          {date: "2015-06", value:1350000, day: 27},
+          {date: "2015-07", value:1300000, day: 29},
+          {date: "2015-08", value:1120000, day: 19},
+          {date: "2015-09", value:1500000, day: 28},
+          {date: "2015-10", value:1100000, day: 10},
+          {date: "2015-11", value:1290000, day: 30},
+          {date: "2015-12", value:1100000, day: 20}
+        ]
+      },
+      {
+        sales: [
+          {date: "2014-01", value:1500000, day: 10},
+          {date: "2014-02", value:1200000, day: 24},
+          {date: "2014-03", value:1100000, day: 26},
+          {date: "2014-04", value:1250000, day: 22},
+          {date: "2014-05", value:1400000, day: 28},
+          {date: "2014-06", value:1650000, day: 30},
+          {date: "2014-07", value:1200000, day: 10},
+          {date: "2014-08", value:1220000, day: 30},
+          {date: "2014-09", value:1400000, day: 25},
+          {date: "2014-10", value:1300000, day: 27},
+          {date: "2014-11", value:1390000, day: 28},
+          {date: "2014-12", value:1300000, day: 29}
+        ]
+      }
+    ],
+    targetSalesData: [
+      {date: "2016-01", value:1500000},
+      {date: "2016-02", value:1600000},
+      {date: "2016-03", value:1700000},
+      {date: "2016-04", value:1700000},
+      {date: "2016-05", value:1500000},
+      {date: "2016-06", value:1700000},
+      {date: "2016-07", value:1570000},
+      {date: "2016-08", value:1600000},
+      {date: "2016-09", value:1700000},
+      {date: "2016-10", value:1600000},
+      {date: "2016-11", value:1400000},
+      {date: "2016-12", value:1700000}
+    ],
+    graphData: {
+      maxSalesData: 1800000,
+      maxBusinessDay: 45,
+      displayMonth: [
+        1,2,3,4,5,6,7,8,9,10,11,12
+      ]
+    }
   }
+
+  /* -----------------------------------
+    グラフ領域設定
+  ----------------------------------- */
 
   var width = 960;
   var height = 514;
@@ -54,13 +100,21 @@
   // グラフ下余白
   var graphBottomPadding = 50;
 
+  // 収益最大値
+  var maxSalesData = data.graphData.maxSalesData;
+
+  // 診療日最大値
+  var maxBuisinessDay = data.graphData.maxBusinessDay;
+
+  // 表示月
+  var displayMonth = data.graphData.displayMonth;
+
   // 月単位の間隔
   var monthWidth = (width - xAxisPadding * 2) / 11;
 
-  var max = 1800000;
-
-  var rightMax = 45;
-
+　/* -----------------------------------
+    グラフ領域初期化
+  ----------------------------------- */
 
   // SVG作成
   var graphArea = d3.select("#graphArea")
@@ -84,11 +138,13 @@
   // 棒グラフの数
   var numberSeries = 3;
 
-  var data2 = d3.range(numberSeries).map(function () { 
-    return d3.range(numberGroups).map(Math.random); 
+  // データ整形
+  var businessDayData = d3.range(numberSeries).map(function (i) { 
+    var md = data.monthlyData[i];
+    return d3.range(numberGroups).map(function(i) {
+      return md.sales[i].day;
+    });
   });
-
-  console.log(data2);
 
   // 棒グラフグループのXスケール
   var x0 = d3.scale.ordinal()
@@ -102,11 +158,11 @@
 
   // 各棒グラフのYスケール
   var y = d3.scale.linear()
-      .domain([0, 1])
+      .domain([0, maxBuisinessDay])
       .range([0, height]);
 
   var series = graph.selectAll("series")
-      .data(data2)
+      .data(businessDayData)
       .enter()
       .append("g")
       .attr("class", "series")
@@ -135,39 +191,29 @@
     月次売上折れ線グラフ
   ----------------------------------- */
 
-  // 売上月データ数
-  var salesMonthNum = salesData.length;
-
-  // 最初の表示月
-  var displayFirstYear = +salesData[0].date.split('-')[0];
-  var displayFirstMonth = +salesData[0].date.split('-')[1];
-  var displayLastYear = +salesData[salesMonthNum - 1].date.split('-')[0];
-  var displayLastMonth = +salesData[salesMonthNum - 1].date.split('-')[1];
+  // 折れ線グラフ色
+  var salesLineColors = [
+    "#F84983", "#FEAF15", "#50B6F0"
+  ];
 
   // 軸
   var xScale = d3.time.scale()
-    // .domain([
-    //   new Date(displayFirstYear,displayFirstMonth - 1), 
-    //   new Date(displayLastYear,displayLastMonth - 1)
-    // ])
-    .domain([1, 12])
+    .domain([1, displayMonth.length])
     .range([xAxisPadding, monthWidth * 11 + xAxisPadding]);
 
   var yScale = d3.scale.linear()
-    .domain([max, 0])
+    .domain([maxSalesData, 0])
     .range([graphTopPadding, height + graphTopPadding]);
 
   var yScale2 = d3.scale.linear()
-    .domain([rightMax, 0])
+    .domain([maxBuisinessDay, 0])
     .range([graphTopPadding, height + graphTopPadding]);
 
   var xAxis = d3.svg.axis()
     .scale(xScale)
     .orient("bottom")
     .tickFormat(function(d,i){
-      var month = +salesData[i].date.split('-')[1];
-      return month + '' + '月'; 
-      //return (d.getMonth() + 1) + '月'; 
+      return data.graphData.displayMonth[i] + '月';
     })
     .ticks(12);
 
@@ -226,17 +272,63 @@
     .attr("transform", "translate(" + graphLeftPadding + ", 0)")
     .call(xGridAxis);
 
-  // 折れ線グラフ
-  var line = d3.svg.line()
-    .x(function(d, i){
-      return (i * monthWidth) + graphLeftPadding + xAxisPadding;
-    })
-    .y(function(d){
-      return height + graphTopPadding - ( height / max * d.value );
-    });
+  var drawSalesLineGraph = function(data, color, option) {
 
-  // 塗り潰し領域を生成
-  var area = d3.svg.area()
+    // 折れ線グラフ
+    var line = d3.svg.line()
+      .x(function(d, i){
+        return (i * monthWidth) + graphLeftPadding + xAxisPadding;
+      })
+      .y(function(d){
+        return height + graphTopPadding - ( height / maxSalesData * d.value );
+      });
+
+    graph.append("path")
+      .attr("d", line(data))
+      .attr("stroke", color)
+      .attr("stroke-width", "2px")
+      .attr("fill", "none");
+
+    // 散布図
+    graph.selectAll(".circle" + option.index + "")
+        .data(data)
+        .enter()
+        .append("circle")
+      .attr("class", "circle" + option.index + "")
+        .attr("cx", function(d,i){
+            return (i * monthWidth) + graphLeftPadding + xAxisPadding;
+        })
+        .attr("cy", function(d){
+            return height + graphTopPadding - (height / maxSalesData * d.value );
+        })
+        .attr("r", 5)
+        .attr("fill", color);
+
+    if (option.isShowText) {
+      // テキスト
+      graph.selectAll(".text" + option.index + "")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "text" + option.index + "")
+        .text(function (d) {
+          return d.value;
+        })
+        .attr("font-size", "14px")
+        .attr("fill", color)
+        .attr("x", function(d, i){
+          return (i * monthWidth) + graphLeftPadding + xAxisPadding - 25;
+        })
+        .attr("y", function(d){
+          return height + graphTopPadding - (height / maxSalesData * d.value ) - 15;
+        });
+    }
+  }
+
+  var drawTargetSalesLineGraph = function(data, color, option) {
+
+    // 塗り潰し領域を生成
+    var area = d3.svg.area()
       .x(function(d,i) { 
         return (i * monthWidth) + graphLeftPadding + xAxisPadding;
       })
@@ -244,53 +336,30 @@
         return height + graphTopPadding;
       })
       .y1(function(d,i) { 
-        return height + graphTopPadding - ( height / max * d.value );
+        return height + graphTopPadding - ( height / maxSalesData * d.value );
       });
 
-  graph.append("path")
-    .attr("class", "high")
-    .attr("d", line(salesData))
-    .attr("stroke", "#FA4884")
-    .attr("stroke-width", "2px")
-    .attr("fill", "none");
+    graph.append("path")
+      .attr("d", area(data))
+      .attr("stroke", "#0FBFB8")
+      .attr("stroke-width", "2px")
+      .attr("fill", "#E2F4F5")
+      .attr("opacity", "0.3");
+  }
 
-  graph.append("path")
-    .attr("d", area(targetSalesData))
-    .attr("stroke", "#1DC3BC")
-    .attr("stroke-width", "2px")
-    .attr("fill", "#B3F7FE")
-    .attr("opacity", "0.3");
+  // 収益目標グラフ描画
+  drawTargetSalesLineGraph(data.targetSalesData);
 
-  // 散布図
-  graph.selectAll(".high_circle")
-      .data(salesData)
-      .enter()
-      .append("circle")
-    .attr("class", "high_circle")
-      .attr("cx", function(d,i){
-          return (i * monthWidth) + graphLeftPadding + xAxisPadding;
-      })
-      .attr("cy", function(d){
-          return height + graphTopPadding - (height / max * d.value );
-      })
-      .attr("r", 5)
-      .attr("fill", "#FA4884");
+  // 収益実績グラフ描画 (最新のものが前面にくるように)
+  for (var i = data.monthlyData.length - 1; i >= 0; i-- ) {
+    drawSalesLineGraph(
+      data.monthlyData[i].sales, 
+      salesLineColors[i],
+      {
+        index: i,
+        isShowText: (i === 0) ? true : false
+      }
+    );
+  }
 
-  // テキスト
-  graph.selectAll(".high_text")
-    .data(salesData)
-    .enter()
-    .append("text")
-    .attr("class", "high_text")
-    .text(function (d) {
-      return d.value;
-    })
-    .attr("font-size", "14px")
-    .attr("fill", "#FA4884")
-    .attr("x", function(d, i){
-      return (i * monthWidth) + graphLeftPadding + xAxisPadding - 25;
-    })
-    .attr("y", function(d){
-      return height + graphTopPadding - (height / max * d.value ) - 15;
-    });
 })();
