@@ -133,7 +133,7 @@
   var rectColors = [ "#BDE4F3", "#E7E2C1", "#E2CCD8" ];
 
   // 棒グラフグループ数
-  var numberGroups = 12;
+  var numberGroups = displayMonth.length;
 
   // 棒グラフの数
   var numberSeries = 3;
@@ -149,7 +149,7 @@
   // 棒グラフグループのXスケール
   var x0 = d3.scale.ordinal()
       .domain(d3.range(numberGroups))
-      .rangeBands([graphLeftPadding + xAxisPadding, ((monthWidth * 12) + graphLeftPadding + xAxisPadding)]);
+      .rangeBands([graphLeftPadding + xAxisPadding, ((monthWidth * displayMonth.length) + graphLeftPadding + xAxisPadding)]);
 
   // 各棒グラフのXスケール
   var x1 = d3.scale.ordinal()
@@ -199,7 +199,7 @@
   // 軸
   var xScale = d3.time.scale()
     .domain([1, displayMonth.length])
-    .range([xAxisPadding, monthWidth * 11 + xAxisPadding]);
+    .range([xAxisPadding, monthWidth * (displayMonth.length -  1) + xAxisPadding]);
 
   var yScale = d3.scale.linear()
     .domain([maxSalesData, 0])
@@ -215,7 +215,7 @@
     .tickFormat(function(d,i){
       return data.graphData.displayMonth[i] + '月';
     })
-    .ticks(12);
+    .ticks(displayMonth.length);
 
   var yAxis = d3.svg.axis()
     .scale(yScale)
