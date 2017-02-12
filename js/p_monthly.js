@@ -31,7 +31,7 @@
     {date: "2015-12", value:1700000}
   ];
 
-  var dataSinryobi = {
+  var businessDays = {
     
 
   }
@@ -75,7 +75,8 @@
     診察日数棒グラフ
   ----------------------------------- */
 
-  var c = [ "#BDE4F3", "#E7E2C1", "#E2CCD8" ]; // ColorBrewer Set 1
+  // 棒グラフ色
+  var rectColors = [ "#BDE4F3", "#E7E2C1", "#E2CCD8" ];
 
   // 棒グラフグループ数
   var numberGroups = 12;
@@ -86,6 +87,8 @@
   var data2 = d3.range(numberSeries).map(function () { 
     return d3.range(numberGroups).map(Math.random); 
   });
+
+  console.log(data2);
 
   // 棒グラフグループのXスケール
   var x0 = d3.scale.ordinal()
@@ -108,7 +111,7 @@
       .append("g")
       .attr("class", "series")
       .attr("fill", function (d, i) { 
-        return c[i]; 
+        return rectColors[i]; 
       })
       .attr("transform", function (d, i) { 
         return "translate(" + x1(i) + ")"; 
@@ -143,11 +146,11 @@
 
   // 軸
   var xScale = d3.time.scale()
-    .domain([
-      new Date(displayFirstYear,displayFirstMonth - 1), 
-      new Date(displayLastYear,displayLastMonth - 1)
-    ])
-    //.domain([1, 12])
+    // .domain([
+    //   new Date(displayFirstYear,displayFirstMonth - 1), 
+    //   new Date(displayLastYear,displayLastMonth - 1)
+    // ])
+    .domain([1, 12])
     .range([xAxisPadding, monthWidth * 11 + xAxisPadding]);
 
   var yScale = d3.scale.linear()
@@ -162,7 +165,9 @@
     .scale(xScale)
     .orient("bottom")
     .tickFormat(function(d,i){
-      return (d.getMonth() + 1) + '月'; 
+      var month = +salesData[i].date.split('-')[1];
+      return month + '' + '月'; 
+      //return (d.getMonth() + 1) + '月'; 
     })
     .ticks(12);
 
