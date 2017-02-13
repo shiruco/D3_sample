@@ -201,11 +201,15 @@
     .domain([1, displayMonth.length])
     .range([xAxisPadding, monthWidth * (displayMonth.length -  1) + xAxisPadding]);
 
-  var yScale = d3.scale.linear()
+  var xGridScale = d3.time.scale()
+    .domain([1, 12])
+    .range([xAxisPadding, monthWidth * 11 + xAxisPadding]);
+
+  var yScaleSales = d3.scale.linear()
     .domain([maxSalesData, 0])
     .range([graphTopPadding, height + graphTopPadding]);
 
-  var yScale2 = d3.scale.linear()
+  var yScaleBusinessDay = d3.scale.linear()
     .domain([maxBuisinessDay, 0])
     .range([graphTopPadding, height + graphTopPadding]);
 
@@ -217,24 +221,22 @@
     })
     .ticks(displayMonth.length);
 
-  var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .ticks(9)
+  var yAxisSales = d3.svg.axis()
+    .scale(yScaleSales)
     .orient("left");
 
-  var yAxis2 = d3.svg.axis()
-    .scale(yScale2)
-    .ticks(9)
+  var yAxisBusinessDay = d3.svg.axis()
+    .scale(yScaleBusinessDay)
     .orient("right");
 
   var yGridAxis = d3.svg.axis()
-      .scale(xScale)
+      .scale(xGridScale)
       .orient("bottom")
       .innerTickSize(-height)
       .tickFormat("");
 
   var xGridAxis = d3.svg.axis()
-    .scale(yScale)
+    .scale(yScaleSales)
     .orient("left")
     .innerTickSize(-width)
     .tickFormat("");
@@ -252,13 +254,13 @@
   graph.append("g")
     .attr("class", "axis")
     .attr("transform", "translate(" + graphLeftPadding + ", 0)")
-    .call(yAxis);
+    .call(yAxisSales);
 
   // 診察日数(Y軸)を描画
   graph.append("g")
     .attr("class", "axis")
     .attr("transform", "translate(" + (width + graphLeftPadding) + ", 0)")
-    .call(yAxis2);
+    .call(yAxisBusinessDay);
 
   // Y軸のグリッドを描画
   graph.append("g")
